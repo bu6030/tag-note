@@ -10,6 +10,11 @@ const tagSearchInput = document.getElementById('tagSearchInput');
 const searchBtn = document.getElementById('searchBtn');
 const clearBtn = document.getElementById('clearBtn');
 
+// Rich text editor elements
+const contentEditor = document.getElementById('content');
+const boldBtn = document.getElementById('boldBtn');
+const numberedListBtn = document.getElementById('numberedListBtn');
+
 // Pagination state
 let currentPage = 0;
 let currentSearchTerm = '';
@@ -22,6 +27,21 @@ let editingNoteId = null;
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     loadNotesPaginated();
+    
+    // Add event listeners for rich text editor buttons
+    if (boldBtn) {
+        boldBtn.addEventListener('click', () => {
+            document.execCommand('bold', false, null);
+            contentEditor.focus();
+        });
+    }
+    
+    if (numberedListBtn) {
+        numberedListBtn.addEventListener('click', () => {
+            document.execCommand('insertOrderedList', false, null);
+            contentEditor.focus();
+        });
+    }
 });
 
 noteForm.addEventListener('submit', handleNoteSubmit);
@@ -57,6 +77,29 @@ async function loadNotesPaginated(page = 0) {
     }
 }
 
+// Simple HTML sanitizer to prevent XSS while allowing safe formatting
+function sanitizeHtml(html) {
+    if (!html) return '';
+    
+    // Create a temporary element to parse HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    
+    // Remove all elements except allowed ones
+    const allowedTags = ['B', 'STRONG', 'OL', 'LI', 'BR'];
+    const elements = temp.querySelectorAll('*');
+    
+    for (let i = elements.length - 1; i >= 0; i--) {
+        const element = elements[i];
+        if (!allowedTags.includes(element.tagName)) {
+            // Replace unauthorized elements with their text content
+            element.outerHTML = element.innerHTML;
+        }
+    }
+    
+    return temp.innerHTML;
+}
+
 // Render notes to the page
 function renderNotes(notes) {
     if (!notes || notes.length === 0) {
@@ -67,7 +110,7 @@ function renderNotes(notes) {
     notesContainer.innerHTML = notes.map(note => `
         <div class="note-card" data-id="${note.id}">
             <h3 class="note-title">${escapeHtml(note.title)}</h3>
-            <div class="note-content">${escapeHtml(note.content)}</div>
+            <div class="note-content">${sanitizeHtml(note.content)}</div>
             <div class="note-meta">
                 <span>Created: ${formatDate(note.createdAt)}</span>
                 <span>Updated: ${formatDate(note.updatedAt)}</span>
@@ -132,7 +175,7 @@ async function handleNoteSubmit(event) {
     event.preventDefault();
     
     const title = document.getElementById('title').value;
-    const content = document.getElementById('content').value;
+    const content = contentEditor.innerHTML; // Get HTML content instead of plain text
     const tagsInput = document.getElementById('tags').value;
     
     // Split tags by both regular comma and Chinese comma (、)
@@ -173,6 +216,7 @@ async function handleNoteSubmit(event) {
         if (response.ok) {
             // Clear form and reset editing state
             noteForm.reset();
+            contentEditor.innerHTML = ''; // Clear rich text editor
             editingNoteId = null;
             document.querySelector('.note-form-section h2').textContent = '添加新笔记'; // Reset header
             
@@ -207,7 +251,10 @@ async function editNote(id) {
             
             // Populate form with note data
             document.getElementById('title').value = note.title || '';
-            document.getElementById('content').value = note.content || '';
+            
+            // For editing, we want to show the raw HTML in the editor
+            contentEditor.innerHTML = note.content || '';
+            
             document.getElementById('tags').value = note.tags ? note.tags.join('、') : ''; // Use Chinese comma as separator
             
             // Set editing state

@@ -25,7 +25,11 @@
                     
                     <div class="form-group">
                         <label for="content">内容</label>
-                        <textarea id="content" name="content" rows="4" required></textarea>
+                        <div class="editor-toolbar">
+                            <button type="button" id="boldBtn" title="Bold">B</button>
+                            <button type="button" id="numberedListBtn" title="Numbered List">1.</button>
+                        </div>
+                        <div id="content" class="rich-text-editor" contenteditable="true" required></div>
                     </div>
                     
                     <div class="form-group">
