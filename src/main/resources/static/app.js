@@ -16,6 +16,9 @@ let currentSearchTerm = '';
 let currentTagSearchTerm = '';
 let pageSize = 5; // Increased page size for better UX
 
+// Add a variable to track if we're editing a note
+let editingNoteId = null;
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     loadNotesPaginated();
@@ -74,8 +77,8 @@ function renderNotes(notes) {
                 ${note.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
             </div>` : ''}
             <div class="note-actions">
-                <button class="btn-edit" onclick="editNote(${note.id})">Edit</button>
-                <button class="btn-delete" onclick="deleteNote(${note.id})">Delete</button>
+                <button class="btn-edit" onclick="editNote(${note.id})">修改</button>
+                <button class="btn-delete" onclick="deleteNote(${note.id})">删除</button>
             </div>
         </div>
     `).join('');
@@ -145,17 +148,33 @@ async function handleNoteSubmit(event) {
     
     try {
         showLoading(true);
-        const response = await fetch(`${API_BASE}/notes`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(noteData)
-        });
+        let response;
+        
+        if (editingNoteId) {
+            // Update existing note
+            response = await fetch(`${API_BASE}/notes/${editingNoteId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(noteData)
+            });
+        } else {
+            // Create new note
+            response = await fetch(`${API_BASE}/notes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(noteData)
+            });
+        }
         
         if (response.ok) {
-            // Clear form
+            // Clear form and reset editing state
             noteForm.reset();
+            editingNoteId = null;
+            document.querySelector('.note-form-section h2').textContent = '添加新笔记'; // Reset header
             
             // Reload notes (go back to first page)
             currentPage = 0;
@@ -165,22 +184,50 @@ async function handleNoteSubmit(event) {
                 loadNotesPaginated(currentPage);
             }
             
-            showSuccess('Note saved successfully!');
+            showSuccess(editingNoteId ? 'Note updated successfully!' : 'Note saved successfully!');
         } else {
-            throw new Error('Failed to save note');
+            throw new Error(editingNoteId ? 'Failed to update note' : 'Failed to save note');
         }
         showLoading(false);
     } catch (error) {
-        console.error('Error saving note:', error);
-        showError('Failed to save note');
+        console.error('Error saving/updating note:', error);
+        showError(editingNoteId ? 'Failed to update note' : 'Failed to save note');
         showLoading(false);
     }
 }
 
-// Edit note (stub implementation)
-function editNote(id) {
-    alert(`Edit functionality for note ${id} would be implemented here.`);
-    // In a full implementation, this would load the note data into the form
+// Edit note - load note data into the form
+async function editNote(id) {
+    try {
+        showLoading(true);
+        const response = await fetch(`${API_BASE}/notes/${id}`);
+        
+        if (response.ok) {
+            const note = await response.json();
+            
+            // Populate form with note data
+            document.getElementById('title').value = note.title || '';
+            document.getElementById('content').value = note.content || '';
+            document.getElementById('tags').value = note.tags ? note.tags.join('、') : ''; // Use Chinese comma as separator
+            
+            // Set editing state
+            editingNoteId = id;
+            
+            // Update form header to indicate editing
+            document.querySelector('.note-form-section h2').textContent = '编辑笔记';
+            
+            // Scroll to form
+            document.querySelector('.note-form-section').scrollIntoView({ behavior: 'smooth' });
+            
+            showLoading(false);
+        } else {
+            throw new Error('Failed to load note for editing');
+        }
+    } catch (error) {
+        console.error('Error loading note for editing:', error);
+        showError('Failed to load note for editing');
+        showLoading(false);
+    }
 }
 
 // Delete note
