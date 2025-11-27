@@ -4,6 +4,7 @@ const API_BASE = '/api';
 // DOM Elements
 const noteForm = document.getElementById('noteForm');
 const notesContainer = document.getElementById('notesContainer');
+const tagsContainer = document.getElementById('tagsContainer');
 const paginationControls = document.getElementById('paginationControls');
 const tagSearchInput = document.getElementById('tagSearchInput');
 const searchBtn = document.getElementById('searchBtn');
@@ -26,6 +27,7 @@ let editingNoteId = null;
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     loadNotesPaginated();
+    loadTags(); // Load tags when page loads
     
     // Add event listeners for rich text editor buttons
     if (boldBtn) {
@@ -60,6 +62,45 @@ tagSearchInput.addEventListener('keypress', (e) => {
         handleSearch();
     }
 });
+
+// Load all tags
+async function loadTags() {
+    try {
+        const response = await fetch(`${API_BASE}/tags`);
+        const tags = await response.json();
+        renderTags(tags);
+    } catch (error) {
+        console.error('Error loading tags:', error);
+    }
+}
+
+// Render tags to the sidebar
+function renderTags(tags) {
+    if (!tags || tags.length === 0) {
+        tagsContainer.innerHTML = '<p class="no-tags">暂无标签</p>';
+        return;
+    }
+
+    tagsContainer.innerHTML = tags.map(tag => `
+        <span class="tag" data-tag-name="${escapeHtml(tag.name)}">${escapeHtml(tag.name)}</span>
+    `).join('');
+    
+    // Add click event listeners to tags
+    document.querySelectorAll('.tag').forEach(tagElement => {
+        tagElement.addEventListener('click', () => {
+            const tagName = tagElement.getAttribute('data-tag-name');
+            filterByTag(tagName);
+        });
+    });
+}
+
+// Filter notes by tag
+function filterByTag(tagName) {
+    tagSearchInput.value = tagName;
+    currentTagSearchTerm = tagName;
+    currentPage = 0;
+    searchNotesPaginated(currentPage);
+}
 
 // Load all notes with pagination
 async function loadNotesPaginated(page = 0) {
@@ -226,6 +267,9 @@ async function handleNoteSubmit(event) {
                 loadNotesPaginated(currentPage);
             }
             
+            // Reload tags to reflect any new tags
+            loadTags();
+            
             showSuccess(editingNoteId ? 'Note updated successfully!' : 'Note saved successfully!');
         } else {
             throw new Error(editingNoteId ? 'Failed to update note' : 'Failed to save note');
@@ -292,6 +336,9 @@ async function deleteNote(id) {
             } else {
                 loadNotesPaginated(currentPage);
             }
+            
+            // Reload tags to reflect any removed tags
+            loadTags();
             
             showSuccess('Note deleted successfully!');
         } else {
