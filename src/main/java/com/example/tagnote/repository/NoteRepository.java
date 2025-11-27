@@ -12,14 +12,11 @@ import java.util.List;
 
 @Repository
 public interface NoteRepository extends JpaRepository<Note, Long> {
-    List<Note> findByTitleContainingIgnoreCase(String title);
-        
-        Page<Note> findAll(Pageable pageable);
-        Page<Note> findByTitleContainingIgnoreCase(String title, Pageable pageable);
-        
-        // Method to find all notes ordered by createdAt descending
-        Page<Note> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    Page<Note> findAll(Pageable pageable);
     
+    // Method to find all notes ordered by createdAt descending
+    Page<Note> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
     @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames")
     List<Note> findByTagNames(@Param("tagNames") List<String> tagNames);
     
@@ -28,8 +25,4 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     
     @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames ORDER BY n.createdAt DESC")
     List<Note> findByTagNamesOrderByCreatedAtDesc(@Param("tagNames") List<String> tagNames);
-    
-    // Search methods with ordering by createdAt descending
-    List<Note> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title);
-    Page<Note> findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(String title, Pageable pageable);
 }

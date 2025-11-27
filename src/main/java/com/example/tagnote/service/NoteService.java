@@ -40,7 +40,8 @@ public class NoteService {
     }
 
     public Note createNote(String title, String content, List<String> tagNames) {
-        Note note = new Note(title, content);
+        Note note = new Note(content);
+        note.setTitle(title); // Title can be null
         
         if (tagNames != null) {
             for (String tagName : tagNames) {
@@ -64,7 +65,7 @@ public class NoteService {
         Optional<Note> noteOptional = noteRepository.findById(id);
         if (noteOptional.isPresent()) {
             Note note = noteOptional.get();
-            note.setTitle(title);
+            note.setTitle(title); // Title can be null
             note.setContent(content);
             
             // Clear existing tags
@@ -93,14 +94,6 @@ public class NoteService {
 
     public void deleteNote(Long id) {
         noteRepository.deleteById(id);
-    }
-
-    public List<Note> searchNotesByTitle(String title) {
-        return noteRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title);
-    }
-    
-    public Page<Note> searchNotesByTitle(String title, Pageable pageable) {
-        return noteRepository.findByTitleContainingIgnoreCaseOrderByCreatedAtDesc(title, pageable);
     }
 
     public List<Note> searchNotesByTags(List<String> tagNames) {

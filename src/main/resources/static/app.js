@@ -5,7 +5,6 @@ const API_BASE = '/api';
 const noteForm = document.getElementById('noteForm');
 const notesContainer = document.getElementById('notesContainer');
 const paginationControls = document.getElementById('paginationControls');
-const searchInput = document.getElementById('searchInput');
 const tagSearchInput = document.getElementById('tagSearchInput');
 const searchBtn = document.getElementById('searchBtn');
 const clearBtn = document.getElementById('clearBtn');
@@ -18,7 +17,6 @@ const bulletListBtn = document.getElementById('bulletListBtn');
 
 // Pagination state
 let currentPage = 0;
-let currentSearchTerm = '';
 let currentTagSearchTerm = '';
 let pageSize = 5; // Increased page size for better UX
 
@@ -57,12 +55,6 @@ searchBtn.addEventListener('click', handleSearch);
 clearBtn.addEventListener('click', clearSearch);
 
 // Add event listeners for Enter key in search inputs
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        handleSearch();
-    }
-});
-
 tagSearchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         handleSearch();
@@ -117,7 +109,6 @@ function renderNotes(notes) {
 
     notesContainer.innerHTML = notes.map(note => `
         <div class="note-card" data-id="${note.id}">
-            <h3 class="note-title">${escapeHtml(note.title)}</h3>
             <div class="note-content">${sanitizeHtml(note.content)}</div>
             <div class="note-meta">
                 <span>Created: ${formatDate(note.createdAt)}</span>
@@ -171,7 +162,7 @@ function renderPaginationControls(paginatedResponse, currentPage) {
 
 // Go to specific page
 function goToPage(page) {
-    if (currentSearchTerm || currentTagSearchTerm) {
+    if (currentTagSearchTerm) {
         searchNotesPaginated(page);
     } else {
         loadNotesPaginated(page);
@@ -182,7 +173,6 @@ function goToPage(page) {
 async function handleNoteSubmit(event) {
     event.preventDefault();
     
-    const title = document.getElementById('title').value;
     const content = contentEditor.innerHTML; // Get HTML content instead of plain text
     const tagsInput = document.getElementById('tags').value;
     
@@ -192,7 +182,7 @@ async function handleNoteSubmit(event) {
         .filter(tag => tag.length > 0);
     
     const noteData = {
-        title: title,
+        title: "", // Empty title to satisfy database constraint
         content: content,
         tags: tags
     };
@@ -230,7 +220,7 @@ async function handleNoteSubmit(event) {
             
             // Reload notes (go back to first page)
             currentPage = 0;
-            if (currentSearchTerm || currentTagSearchTerm) {
+            if (currentTagSearchTerm) {
                 searchNotesPaginated(currentPage);
             } else {
                 loadNotesPaginated(currentPage);
@@ -258,8 +248,6 @@ async function editNote(id) {
             const note = await response.json();
             
             // Populate form with note data
-            document.getElementById('title').value = note.title || '';
-            
             // For editing, we want to show the raw HTML in the editor
             contentEditor.innerHTML = note.content || '';
             
@@ -299,7 +287,7 @@ async function deleteNote(id) {
         
         if (response.ok) {
             // Reload notes
-            if (currentSearchTerm || currentTagSearchTerm) {
+            if (currentTagSearchTerm) {
                 searchNotesPaginated(currentPage);
             } else {
                 loadNotesPaginated(currentPage);
@@ -322,18 +310,12 @@ async function searchNotesPaginated(page = 0) {
     try {
         showLoading(true);
         let url;
-        if (currentSearchTerm && !currentTagSearchTerm) {
-            // Search by title only
-            url = `${API_BASE}/notes/search/paginated?title=${encodeURIComponent(currentSearchTerm)}&page=${page}&size=${pageSize}`;
-        } else if (!currentSearchTerm && currentTagSearchTerm) {
+        if (currentTagSearchTerm) {
             // Search by tags only
             // Split tags by both regular comma and Chinese comma (、)
             const tags = currentTagSearchTerm.split(/[,、]/).map(tag => tag.trim()).filter(tag => tag.length > 0);
             const tagsParam = tags.join(',');
             url = `${API_BASE}/notes/search/paginated?tags=${encodeURIComponent(tagsParam)}&page=${page}&size=${pageSize}`;
-        } else if (currentSearchTerm && currentTagSearchTerm) {
-            // Search by both title and tags - for simplicity, we'll search by title
-            url = `${API_BASE}/notes/search/paginated?title=${encodeURIComponent(currentSearchTerm)}&page=${page}&size=${pageSize}`;
         } else {
             // Load all notes
             url = `${API_BASE}/notes/paginated?page=${page}&size=${pageSize}`;
@@ -353,7 +335,6 @@ async function searchNotesPaginated(page = 0) {
 
 // Handle search
 async function handleSearch() {
-    currentSearchTerm = searchInput.value.trim();
     currentTagSearchTerm = tagSearchInput.value.trim();
     currentPage = 0; // Reset to first page when searching
     searchNotesPaginated(currentPage);
@@ -361,9 +342,7 @@ async function handleSearch() {
 
 // Clear search
 function clearSearch() {
-    searchInput.value = '';
     tagSearchInput.value = '';
-    currentSearchTerm = '';
     currentTagSearchTerm = '';
     currentPage = 0; // Reset to first page
     loadNotesPaginated(currentPage);

@@ -12,7 +12,7 @@ public class Note {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String title;
 
     @Column(length = 10000)
@@ -35,8 +35,7 @@ public class Note {
     public Note() {
     }
 
-    public Note(String title, String content) {
-        this.title = title;
+    public Note(String content) {
         this.content = content;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();

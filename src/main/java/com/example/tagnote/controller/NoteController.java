@@ -89,12 +89,9 @@ public class NoteController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<NoteDTO>> searchNotes(@RequestParam(required = false) String title,
-                                                    @RequestParam(required = false) List<String> tags) {
+    public ResponseEntity<List<NoteDTO>> searchNotes(@RequestParam(required = false) List<String> tags) {
         List<Note> notes;
-        if (title != null && !title.isEmpty()) {
-            notes = noteService.searchNotesByTitle(title);
-        } else if (tags != null && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             notes = noteService.searchNotesByTags(tags);
         } else {
             notes = noteService.getAllNotes();
@@ -106,7 +103,6 @@ public class NoteController {
 
     @GetMapping("/search/paginated")
     public ResponseEntity<PaginatedResponse> searchNotesPaginated(
-            @RequestParam(required = false) String title,
             @RequestParam(required = false) List<String> tags,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "${app.notes.page-size:5}") int size) {
@@ -116,9 +112,7 @@ public class NoteController {
         Pageable pageable = PageRequest.of(page, pageSize);
         
         Page<Note> notePage;
-        if (title != null && !title.isEmpty()) {
-            notePage = noteService.searchNotesByTitle(title, pageable);
-        } else if (tags != null && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             notePage = noteService.searchNotesByTags(tags, pageable);
         } else {
             notePage = noteService.getAllNotes(pageable);
