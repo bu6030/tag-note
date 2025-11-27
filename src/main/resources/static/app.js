@@ -14,6 +14,7 @@ const clearBtn = document.getElementById('clearBtn');
 const contentEditor = document.getElementById('content');
 const boldBtn = document.getElementById('boldBtn');
 const numberedListBtn = document.getElementById('numberedListBtn');
+const bulletListBtn = document.getElementById('bulletListBtn');
 
 // Pagination state
 let currentPage = 0;
@@ -39,6 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (numberedListBtn) {
         numberedListBtn.addEventListener('click', () => {
             document.execCommand('insertOrderedList', false, null);
+            contentEditor.focus();
+        });
+    }
+    
+    if (bulletListBtn) {
+        bulletListBtn.addEventListener('click', () => {
+            document.execCommand('insertUnorderedList', false, null);
             contentEditor.focus();
         });
     }
@@ -86,7 +94,7 @@ function sanitizeHtml(html) {
     temp.innerHTML = html;
     
     // Remove all elements except allowed ones
-    const allowedTags = ['B', 'STRONG', 'OL', 'LI', 'BR'];
+    const allowedTags = ['B', 'STRONG', 'OL', 'UL', 'LI', 'BR'];
     const elements = temp.querySelectorAll('*');
     
     for (let i = elements.length - 1; i >= 0; i--) {

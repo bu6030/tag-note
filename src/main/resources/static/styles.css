@@ -131,12 +131,14 @@ textarea:focus {
     background-color: white;
 }
 
-.rich-text-editor ol {
+.rich-text-editor ol,
+.rich-text-editor ul {
     padding-left: 20px;
     margin: 10px 0;
 }
 
-.rich-text-editor ol li {
+.rich-text-editor ol li,
+.rich-text-editor ul li {
     margin: 5px 0;
 }
 
@@ -204,9 +206,25 @@ button:active {
 
 .note-content {
     margin-bottom: 15px;
-    white-space: pre-wrap;
     color: #555;
     line-height: 1.6;
+}
+
+.note-content ol,
+.note-content ul {
+    padding-left: 20px;
+    margin: 10px 0;
+}
+
+.note-content ol li,
+.note-content ul li {
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+.note-content b,
+.note-content strong {
+    font-weight: bold;
 }
 
 .note-meta {
