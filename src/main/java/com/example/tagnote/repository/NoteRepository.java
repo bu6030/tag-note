@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -16,6 +17,9 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     
     // Method to find all notes ordered by createdAt descending
     Page<Note> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    
+    // Method to find all notes ordered by createdAt ascending
+    Page<Note> findAllByOrderByCreatedAtAsc(Pageable pageable);
 
     @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames")
     List<Note> findByTagNames(@Param("tagNames") List<String> tagNames);
@@ -25,4 +29,8 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     
     @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames ORDER BY n.createdAt DESC")
     List<Note> findByTagNamesOrderByCreatedAtDesc(@Param("tagNames") List<String> tagNames);
+    
+    // Method to get distinct creation dates for calendar view
+    @Query("SELECT DISTINCT n.createdAt FROM Note n ORDER BY n.createdAt DESC")
+    List<LocalDateTime> findDistinctCreationDates();
 }

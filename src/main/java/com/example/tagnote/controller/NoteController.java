@@ -13,7 +13,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -131,6 +135,33 @@ public class NoteController {
         );
         
         return ResponseEntity.ok(response);
+    }
+    
+    // Endpoint to get distinct note creation dates for calendar view
+    @GetMapping("/dates")
+    public ResponseEntity<List<LocalDateTime>> getNoteDates() {
+        List<LocalDateTime> dates = noteService.getDistinctNoteDates();
+        return ResponseEntity.ok(dates);
+    }
+    
+    // Endpoint to get statistics
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getStatistics() {
+        Map<String, Object> statistics = new HashMap<>();
+        statistics.put("totalNotes", noteService.getTotalNoteCount());
+        statistics.put("totalTags", noteService.getTotalTagCount());
+        
+        LocalDateTime firstNoteDate = noteService.getFirstNoteDate();
+        if (firstNoteDate != null) {
+            long daysTracked = ChronoUnit.DAYS.between(firstNoteDate, LocalDateTime.now()) + 1; // +1 to include the first day
+            statistics.put("daysTracked", daysTracked);
+            statistics.put("firstNoteDate", firstNoteDate);
+        } else {
+            statistics.put("daysTracked", 0);
+            statistics.put("firstNoteDate", null);
+        }
+        
+        return ResponseEntity.ok(statistics);
     }
 
     private NoteDTO convertToDTO(Note note) {

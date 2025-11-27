@@ -9,6 +9,8 @@ const paginationControls = document.getElementById('paginationControls');
 const tagSearchInput = document.getElementById('tagSearchInput');
 const searchBtn = document.getElementById('searchBtn');
 const clearBtn = document.getElementById('clearBtn');
+const statisticsContainer = document.getElementById('statisticsContainer');
+const calendarContainer = document.getElementById('calendar');
 
 // Rich text editor elements
 const contentEditor = document.getElementById('content');
@@ -24,10 +26,15 @@ let pageSize = 5; // Increased page size for better UX
 // Add a variable to track if we're editing a note
 let editingNoteId = null;
 
+// Store note dates for calendar rendering
+let noteDates = [];
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     loadNotesPaginated();
     loadTags(); // Load tags when page loads
+    loadStatistics(); // Load statistics when page loads
+    loadNoteDates(); // Load note dates for calendar when page loads
     
     // Add event listeners for rich text editor buttons
     if (boldBtn) {
@@ -72,6 +79,95 @@ async function loadTags() {
     } catch (error) {
         console.error('Error loading tags:', error);
     }
+}
+
+// Load statistics
+async function loadStatistics() {
+    try {
+        const response = await fetch(`${API_BASE}/notes/statistics`);
+        const statistics = await response.json();
+        renderStatistics(statistics);
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+    }
+}
+
+// Load note dates for calendar
+async function loadNoteDates() {
+    try {
+        const response = await fetch(`${API_BASE}/notes/dates`);
+        const dates = await response.json();
+        // Convert date strings to Date objects and extract just the date part
+        noteDates = dates.map(dateStr => {
+            const date = new Date(dateStr);
+            return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        });
+        renderCalendar();
+    } catch (error) {
+        console.error('Error loading note dates:', error);
+    }
+}
+
+// Render statistics to the sidebar
+function renderStatistics(statistics) {
+    if (!statistics) {
+        statisticsContainer.innerHTML = '<p class="no-statistics">暂无统计数据</p>';
+        return;
+    }
+    
+    const statsHTML = `
+        <div class="statistic-item">
+            <span class="statistic-label">笔记总数:</span>
+            <span class="statistic-value">${statistics.totalNotes || 0}</span>
+        </div>
+        <div class="statistic-item">
+            <span class="statistic-label">标签总数:</span>
+            <span class="statistic-value">${statistics.totalTags || 0}</span>
+        </div>
+        <div class="statistic-item">
+            <span class="statistic-label">记录天数:</span>
+            <span class="statistic-value">${statistics.daysTracked || 0}</span>
+        </div>
+    `;
+    
+    statisticsContainer.innerHTML = statsHTML;
+}
+
+// Render calendar to the sidebar as a grid of squares
+function renderCalendar() {
+    // Get today's date
+    const today = new Date();
+    // Create a date object with just the date part (no time)
+    const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    // Create an array to hold the last 100 days
+    const days = [];
+    for (let i = 99; i >= 0; i--) {
+        const date = new Date(todayDate);
+        date.setDate(todayDate.getDate() - i);
+        days.push(date);
+    }
+    
+    // Create calendar grid
+    let calendarHTML = '';
+    
+    // Add cells for each day
+    days.forEach(day => {
+        const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+        const hasNote = noteDates.some(noteDate => {
+            return noteDate.getTime() === day.getTime();
+        });
+        
+        let cellClass = 'calendar-cell';
+        if (hasNote) {
+            cellClass += ' has-note';
+        }
+        
+        calendarHTML += `<div class="${cellClass}" data-date="${dateStr}"></div>`;
+    });
+    
+    // Render the calendar
+    calendarContainer.innerHTML = calendarHTML;
 }
 
 // Render tags to the sidebar
@@ -270,6 +366,10 @@ async function handleNoteSubmit(event) {
             // Reload tags to reflect any new tags
             loadTags();
             
+            // Reload statistics and calendar
+            loadStatistics();
+            loadNoteDates();
+            
             showSuccess(editingNoteId ? 'Note updated successfully!' : 'Note saved successfully!');
         } else {
             throw new Error(editingNoteId ? 'Failed to update note' : 'Failed to save note');
@@ -339,6 +439,10 @@ async function deleteNote(id) {
             
             // Reload tags to reflect any removed tags
             loadTags();
+            
+            // Reload statistics and calendar
+            loadStatistics();
+            loadNoteDates();
             
             showSuccess('Note deleted successfully!');
         } else {

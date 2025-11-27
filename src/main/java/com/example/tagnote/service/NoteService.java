@@ -6,9 +6,11 @@ import com.example.tagnote.repository.NoteRepository;
 import com.example.tagnote.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -102,5 +104,34 @@ public class NoteService {
     
     public Page<Note> searchNotesByTags(List<String> tagNames, Pageable pageable) {
         return noteRepository.findByTagNames(tagNames, pageable);
+    }
+    
+    // Method to get distinct creation dates for calendar view
+    public List<LocalDateTime> getDistinctNoteDates() {
+        List<LocalDateTime> dates = noteRepository.findDistinctCreationDates();
+        // Extract just the date part (without time) for comparison
+        return dates.stream()
+            .map(date -> date.toLocalDate().atStartOfDay())
+            .collect(Collectors.toList());
+    }
+    
+    // Method to get total number of notes
+    public long getTotalNoteCount() {
+        return noteRepository.count();
+    }
+    
+    // Method to get total number of tags
+    public long getTotalTagCount() {
+        return tagRepository.count();
+    }
+    
+    // Method to get the earliest note creation date
+    public LocalDateTime getFirstNoteDate() {
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<Note> notes = noteRepository.findAllByOrderByCreatedAtAsc(pageable);
+        if (notes.hasContent()) {
+            return notes.getContent().get(0).getCreatedAt();
+        }
+        return null;
     }
 }
