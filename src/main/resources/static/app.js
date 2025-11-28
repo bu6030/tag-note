@@ -21,7 +21,7 @@ const bulletListBtn = document.getElementById('bulletListBtn');
 // Pagination state
 let currentPage = 0;
 let currentTagSearchTerm = '';
-let pageSize = 5; // Increased page size for better UX
+let pageSize = 10; // Increased page size for better UX
 
 // Add a variable to track if we're editing a note
 let editingNoteId = null;
@@ -240,7 +240,7 @@ function sanitizeHtml(html) {
 // Render notes to the page
 function renderNotes(notes) {
     if (!notes || notes.length === 0) {
-        notesContainer.innerHTML = '<p class="no-notes">No notes found. Create your first note above!</p>';
+        notesContainer.innerHTML = '<p class="no-notes">暂无笔记。请在上方创建您的第一条笔记！</p>';
         return;
     }
 
@@ -274,13 +274,13 @@ function renderPaginationControls(paginatedResponse, currentPage) {
     
     let paginationHTML = `
         <div class="pagination-info">
-            Showing ${currentPage * pageSize + 1} to ${Math.min((currentPage + 1) * pageSize, totalElements)} of ${totalElements} notes
-        </div>
-        <button id="firstPageBtn" ${hasPrevious ? '' : 'disabled'}>&laquo; First</button>
-        <button id="prevPageBtn" ${hasPrevious ? '' : 'disabled'}>Previous</button>
-        <span>Page ${currentPage + 1} of ${totalPages}</span>
-        <button id="nextPageBtn" ${hasNext ? '' : 'disabled'}>Next</button>
-        <button id="lastPageBtn" ${hasNext ? '' : 'disabled'}>Last &raquo;</button>
+                显示 ${currentPage * pageSize + 1} 到 ${Math.min((currentPage + 1) * pageSize, totalElements)} 共 ${totalElements} 条笔记
+            </div>
+            <button id="firstPageBtn" ${hasPrevious ? '' : 'disabled'}>&laquo; 首页</button>
+            <button id="prevPageBtn" ${hasPrevious ? '' : 'disabled'}>上一页</button>
+            <span>第 ${currentPage + 1} 页，共 ${totalPages} 页</span>
+            <button id="nextPageBtn" ${hasNext ? '' : 'disabled'}>下一页</button>
+            <button id="lastPageBtn" ${hasNext ? '' : 'disabled'}>末页 &raquo;</button>
     `;
     
     paginationControls.innerHTML = paginationHTML;
@@ -370,14 +370,14 @@ async function handleNoteSubmit(event) {
             loadStatistics();
             loadNoteDates();
             
-            showSuccess(editingNoteId ? 'Note updated successfully!' : 'Note saved successfully!');
+            showSuccess(editingNoteId ? '笔记更新成功！' : '笔记保存成功！');
         } else {
-            throw new Error(editingNoteId ? 'Failed to update note' : 'Failed to save note');
+            throw new Error(editingNoteId ? '更新笔记失败' : '保存笔记失败');
         }
         showLoading(false);
     } catch (error) {
         console.error('Error saving/updating note:', error);
-        showError(editingNoteId ? 'Failed to update note' : 'Failed to save note');
+        showError(editingNoteId ? '更新笔记失败' : '保存笔记失败');
         showLoading(false);
     }
 }
@@ -408,18 +408,18 @@ async function editNote(id) {
             
             showLoading(false);
         } else {
-            throw new Error('Failed to load note for editing');
+            throw new Error('加载笔记进行编辑失败');
         }
     } catch (error) {
         console.error('Error loading note for editing:', error);
-        showError('Failed to load note for editing');
+        showError('加载笔记进行编辑失败');
         showLoading(false);
     }
 }
 
 // Delete note
 async function deleteNote(id) {
-    if (!confirm('Are you sure you want to delete this note?')) {
+    if (!confirm('您确定要删除这条笔记吗？')) {
         return;
     }
     
@@ -444,14 +444,14 @@ async function deleteNote(id) {
             loadStatistics();
             loadNoteDates();
             
-            showSuccess('Note deleted successfully!');
+            showSuccess('笔记删除成功！');
         } else {
-            throw new Error('Failed to delete note');
+            throw new Error('删除笔记失败');
         }
         showLoading(false);
     } catch (error) {
         console.error('Error deleting note:', error);
-        showError('Failed to delete note');
+        showError('删除笔记失败');
         showLoading(false);
     }
 }
