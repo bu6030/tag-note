@@ -139,6 +139,8 @@ textarea:focus {
     overflow-y: auto;
     outline: none;
     line-height: 1.6;
+    resize: vertical;
+    max-height: 400px;
 }
 
 .rich-text-editor:focus {
@@ -146,6 +148,12 @@ textarea:focus {
     border-color: #5a7a9c;
     box-shadow: 0 0 0 3px rgba(90, 122, 156, 0.1);
     background-color: white;
+}
+
+.rich-text-editor:empty:before {
+    content: attr(data-placeholder);
+    color: #aaa;
+    pointer-events: none;
 }
 
 .rich-text-editor ol,
