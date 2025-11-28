@@ -178,7 +178,10 @@ function renderTags(tags) {
     }
 
     tagsContainer.innerHTML = tags.map(tag => `
-        <span class="tag" data-tag-name="${escapeHtml(tag.name)}">${escapeHtml(tag.name)}</span>
+        <div class="tag-wrapper">
+            <span class="tag" data-tag-name="${escapeHtml(tag.name)}" data-tag-id="${tag.id}">${escapeHtml(tag.name)}</span>
+            <button class="tag-delete-btn" data-tag-id="${tag.id}" onclick="deleteTag(${tag.id})">×</button>
+        </div>
     `).join('');
     
     // Add click event listeners to tags
@@ -188,6 +191,45 @@ function renderTags(tags) {
             filterByTag(tagName);
         });
     });
+}
+
+// Delete tag
+async function deleteTag(tagId) {
+    if (!confirm('您确定要删除这个标签吗？同时会删除所有带有此标签的笔记。')) {
+        return;
+    }
+    
+    try {
+        showLoading(true);
+        const response = await fetch(`${API_BASE}/tags/${tagId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            // Reload notes
+            if (currentTagSearchTerm) {
+                searchNotesPaginated(currentPage);
+            } else {
+                loadNotesPaginated(currentPage);
+            }
+            
+            // Reload tags to reflect the deletion
+            loadTags();
+            
+            // Reload statistics and calendar
+            loadStatistics();
+            loadNoteDates();
+            
+            showSuccess('标签删除成功！');
+        } else {
+            throw new Error('删除标签失败');
+        }
+        showLoading(false);
+    } catch (error) {
+        console.error('Error deleting tag:', error);
+        showError('删除标签失败');
+        showLoading(false);
+    }
 }
 
 // Filter notes by tag
@@ -311,6 +353,18 @@ async function handleNoteSubmit(event) {
     event.preventDefault();
     
     const content = contentEditor.innerHTML; // Get HTML content instead of plain text
+    
+    // Validate that content is not empty
+    // Create a temporary element to check if content has actual text
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const textContent = tempDiv.textContent || tempDiv.innerText || '';
+    
+    if (!textContent.trim()) {
+        showError('笔记内容不能为空！');
+        return;
+    }
+    
     const tagsInput = document.getElementById('tags').value;
     
     // Split tags by both regular comma and Chinese comma (、)

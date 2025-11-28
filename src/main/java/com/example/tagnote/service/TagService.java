@@ -14,6 +14,9 @@ public class TagService {
     @Autowired
     private TagRepository tagRepository;
 
+    @Autowired
+    private NoteService noteService;
+
     public List<Tag> getAllTags() {
         return tagRepository.findAll();
     }
@@ -27,7 +30,13 @@ public class TagService {
     }
 
     public void deleteTag(Long id) {
-        tagRepository.deleteById(id);
+        // Get the tag to find all notes associated with it
+        tagRepository.findById(id).ifPresent(tag -> {
+            // Delete all notes associated with this tag
+            tag.getNotes().forEach(note -> noteService.deleteNote(note.getId()));
+            // Delete the tag itself
+            tagRepository.deleteById(id);
+        });
     }
 
     public Optional<Tag> getTagByName(String name) {

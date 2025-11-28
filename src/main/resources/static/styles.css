@@ -267,18 +267,53 @@ button:active {
     margin-bottom: 15px;
 }
 
+.tag-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 5px 5px 5px 0;
+}
+
 .tag {
-    background-color: #eef2f7;
-    color: #5a7a9c;
+    display: inline-block;
+    background-color: #e1f5fe;
+    color: #0277bd;
     padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    border-radius: 15px;
+    font-size: 14px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    padding-right: 25px;
 }
 
 .tag:hover {
-    background-color: #dce6f2;
+    background-color: #b3e5fc;
+    color: #01579b;
+}
+
+.tag-delete-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding: 0;
+}
+
+.tag-delete-btn:hover {
+    background-color: #ff3742;
+    transform: scale(1.1);
 }
 
 .tags-container {
