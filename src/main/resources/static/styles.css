@@ -108,22 +108,45 @@ textarea:focus {
 
 .editor-toolbar {
     margin-bottom: 8px;
+    display: flex;
+    gap: 5px;
 }
 
 .editor-toolbar button {
     background-color: #f0f2f5;
     color: #555;
     border: 1px solid #e1e5e9;
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 14px;
     border-radius: 4px;
     cursor: pointer;
-    margin-right: 5px;
     font-weight: bold;
+    flex: 0 0 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: auto !important;
 }
 
 .editor-toolbar button:hover {
     background-color: #e1e5e9;
+}
+
+@media (max-width: 768px) {
+    .editor-toolbar button {
+        padding: 5px 6px;
+        font-size: 12px;
+        width: auto !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .editor-toolbar button {
+        padding: 4px 5px;
+        font-size: 11px;
+        width: auto !important;
+    }
 }
 
 .rich-text-editor {
@@ -439,7 +462,7 @@ button:active {
 
 .calendar {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(8, 1fr);
     gap: 4px;
 }
 
@@ -447,10 +470,17 @@ button:active {
     aspect-ratio: 1;
     background-color: #eeeeee;
     border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #666;
 }
 
 .calendar-cell.has-note {
     background-color: #30cf79;
+    color: white;
+    font-weight: bold;
 }
 
 /* Focus styles for better accessibility */

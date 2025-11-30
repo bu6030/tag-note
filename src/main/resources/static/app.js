@@ -140,9 +140,9 @@ function renderCalendar() {
     // Create a date object with just the date part (no time)
     const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     
-    // Create an array to hold the last 100 days
+    // Create an array to hold the last 64 days
     const days = [];
-    for (let i = 99; i >= 0; i--) {
+    for (let i = 63; i >= 0; i--) {
         const date = new Date(todayDate);
         date.setDate(todayDate.getDate() - i);
         days.push(date);
@@ -163,7 +163,17 @@ function renderCalendar() {
             cellClass += ' has-note';
         }
         
-        calendarHTML += `<div class="${cellClass}" data-date="${dateStr}"></div>`;
+        // Display date text: month for the 1st day of each month, day number otherwise
+        let dateText = '';
+        if (day.getDate() === 1) {
+            // For the 1st day of the month, show the month
+            dateText = `${day.getMonth() + 1}月`;
+        } else {
+            // For other days, show just the day number
+            dateText = day.getDate();
+        }
+        
+        calendarHTML += `<div class="${cellClass}" data-date="${dateStr}">${dateText}</div>`;
     });
     
     // Render the calendar
