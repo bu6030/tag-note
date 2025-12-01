@@ -28,7 +28,7 @@ public class NoteService {
     public List<Note> getAllNotes() {
         return noteRepository.findAll();
     }
-    
+
     public Page<Note> getAllNotes(Pageable pageable) {
         return noteRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
@@ -44,7 +44,7 @@ public class NoteService {
     public Note createNote(String title, String content, List<String> tagNames) {
         Note note = new Note(content);
         note.setTitle(title); // Title can be null
-        
+
         if (tagNames != null) {
             for (String tagName : tagNames) {
                 // Support both regular comma and Chinese comma (、) as separators
@@ -59,7 +59,7 @@ public class NoteService {
                 }
             }
         }
-        
+
         return noteRepository.save(note);
     }
 
@@ -69,10 +69,10 @@ public class NoteService {
             Note note = noteOptional.get();
             note.setTitle(title); // Title can be null
             note.setContent(content);
-            
+
             // Clear existing tags
             note.getTags().clear();
-            
+
             // Add new tags
             if (tagNames != null) {
                 for (String tagName : tagNames) {
@@ -88,7 +88,7 @@ public class NoteService {
                     }
                 }
             }
-            
+
             return noteRepository.save(note);
         }
         return null;
@@ -101,11 +101,11 @@ public class NoteService {
     public List<Note> searchNotesByTags(List<String> tagNames) {
         return noteRepository.findByTagNamesOrderByCreatedAtDesc(tagNames);
     }
-    
+
     public Page<Note> searchNotesByTags(List<String> tagNames, Pageable pageable) {
         return noteRepository.findByTagNames(tagNames, pageable);
     }
-    
+
     // Method to get distinct creation dates for calendar view
     public List<LocalDateTime> getDistinctNoteDates() {
         List<LocalDateTime> dates = noteRepository.findDistinctCreationDates();
@@ -114,17 +114,17 @@ public class NoteService {
             .map(date -> date.toLocalDate().atStartOfDay())
             .collect(Collectors.toList());
     }
-    
+
     // Method to get total number of notes
     public long getTotalNoteCount() {
         return noteRepository.count();
     }
-    
+
     // Method to get total number of tags
     public long getTotalTagCount() {
         return tagRepository.count();
     }
-    
+
     // Method to get the earliest note creation date
     public LocalDateTime getFirstNoteDate() {
         Pageable pageable = PageRequest.of(0, 1);

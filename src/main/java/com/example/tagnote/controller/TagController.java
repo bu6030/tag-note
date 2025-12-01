@@ -28,8 +28,8 @@ public class TagController {
     @GetMapping("/{id}")
     public ResponseEntity<TagDTO> getTagById(@PathVariable Long id) {
         return tagService.getTagById(id)
-                .map(tag -> ResponseEntity.ok(convertToDTO(tag)))
-                .orElse(ResponseEntity.notFound().build());
+            .map(tag -> ResponseEntity.ok(convertToDTO(tag)))
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -47,9 +47,8 @@ public class TagController {
 
     private TagDTO convertToDTO(Tag tag) {
         return new TagDTO(
-                tag.getId(),
-                tag.getName(),
-                tag.getCreatedAt()
-        );
+            tag.getId(),
+            tag.getName(),
+            tag.getCreatedAt());
     }
 }

@@ -27,7 +27,7 @@ public class NoteController {
 
     @Autowired
     private NoteService noteService;
-    
+
     @Value("${app.notes.page-size:5}")
     private int defaultPageSize;
 
@@ -41,8 +41,8 @@ public class NoteController {
     @GetMapping("/{id}")
     public ResponseEntity<NoteDTO> getNoteById(@PathVariable Long id) {
         return noteService.getNoteById(id)
-                .map(note -> ResponseEntity.ok(convertToDTO(note)))
-                .orElse(ResponseEntity.notFound().build());
+            .map(note -> ResponseEntity.ok(convertToDTO(note)))
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
@@ -69,16 +69,16 @@ public class NoteController {
 
     @GetMapping("/paginated")
     public ResponseEntity<PaginatedResponse> getAllNotesPaginated(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "${app.notes.page-size:5}") int size) {
-        
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "${app.notes.page-size:5}") int size) {
+
         // Use the configured page size if not provided or if it's invalid
         int pageSize = (size <= 0) ? defaultPageSize : Math.min(size, 100); // Cap at 100 for performance
         Pageable pageable = PageRequest.of(page, pageSize);
-        
+
         Page<Note> notePage = noteService.getAllNotes(pageable);
         List<NoteDTO> noteDTOs = notePage.getContent().stream().map(this::convertToDTO).collect(Collectors.toList());
-        
+
         PaginatedResponse response = new PaginatedResponse(
             noteDTOs,
             notePage.getNumber(),
@@ -86,9 +86,8 @@ public class NoteController {
             notePage.getTotalElements(),
             notePage.getTotalPages(),
             notePage.hasNext(),
-            notePage.hasPrevious()
-        );
-        
+            notePage.hasPrevious());
+
         return ResponseEntity.ok(response);
     }
 
@@ -100,30 +99,30 @@ public class NoteController {
         } else {
             notes = noteService.getAllNotes();
         }
-        
+
         List<NoteDTO> noteDTOs = notes.stream().map(this::convertToDTO).collect(Collectors.toList());
         return ResponseEntity.ok(noteDTOs);
     }
 
     @GetMapping("/search/paginated")
     public ResponseEntity<PaginatedResponse> searchNotesPaginated(
-            @RequestParam(required = false) List<String> tags,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "${app.notes.page-size:5}") int size) {
-        
+        @RequestParam(required = false) List<String> tags,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "${app.notes.page-size:5}") int size) {
+
         // Use the configured page size if not provided or if it's invalid
         int pageSize = (size <= 0) ? defaultPageSize : Math.min(size, 100); // Cap at 100 for performance
         Pageable pageable = PageRequest.of(page, pageSize);
-        
+
         Page<Note> notePage;
         if (tags != null && !tags.isEmpty()) {
             notePage = noteService.searchNotesByTags(tags, pageable);
         } else {
             notePage = noteService.getAllNotes(pageable);
         }
-        
+
         List<NoteDTO> noteDTOs = notePage.getContent().stream().map(this::convertToDTO).collect(Collectors.toList());
-        
+
         PaginatedResponse response = new PaginatedResponse(
             noteDTOs,
             notePage.getNumber(),
@@ -131,26 +130,25 @@ public class NoteController {
             notePage.getTotalElements(),
             notePage.getTotalPages(),
             notePage.hasNext(),
-            notePage.hasPrevious()
-        );
-        
+            notePage.hasPrevious());
+
         return ResponseEntity.ok(response);
     }
-    
+
     // Endpoint to get distinct note creation dates for calendar view
     @GetMapping("/dates")
     public ResponseEntity<List<LocalDateTime>> getNoteDates() {
         List<LocalDateTime> dates = noteService.getDistinctNoteDates();
         return ResponseEntity.ok(dates);
     }
-    
+
     // Endpoint to get statistics
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getStatistics() {
         Map<String, Object> statistics = new HashMap<>();
         statistics.put("totalNotes", noteService.getTotalNoteCount());
         statistics.put("totalTags", noteService.getTotalTagCount());
-        
+
         LocalDateTime firstNoteDate = noteService.getFirstNoteDate();
         if (firstNoteDate != null) {
             long daysTracked = ChronoUnit.DAYS.between(firstNoteDate, LocalDateTime.now()) + 1; // +1 to include the first day
@@ -160,23 +158,22 @@ public class NoteController {
             statistics.put("daysTracked", 0);
             statistics.put("firstNoteDate", null);
         }
-        
+
         return ResponseEntity.ok(statistics);
     }
 
     private NoteDTO convertToDTO(Note note) {
         List<String> tagNames = note.getTags().stream()
-                .map(Tag::getName)
-                .collect(Collectors.toList());
-                
+            .map(Tag::getName)
+            .collect(Collectors.toList());
+
         return new NoteDTO(
-                note.getId(),
-                note.getTitle(),
-                note.getContent(),
-                note.getCreatedAt(),
-                note.getUpdatedAt(),
-                tagNames
-        );
+            note.getId(),
+            note.getTitle(),
+            note.getContent(),
+            note.getCreatedAt(),
+            note.getUpdatedAt(),
+            tagNames);
     }
 
     // Inner class for paginated response
@@ -189,8 +186,8 @@ public class NoteController {
         private boolean hasNext;
         private boolean hasPrevious;
 
-        public PaginatedResponse(List<NoteDTO> content, int currentPage, int pageSize, 
-                               long totalElements, int totalPages, boolean hasNext, boolean hasPrevious) {
+        public PaginatedResponse(List<NoteDTO> content, int currentPage, int pageSize,
+            long totalElements, int totalPages, boolean hasNext, boolean hasPrevious) {
             this.content = content;
             this.currentPage = currentPage;
             this.pageSize = pageSize;
@@ -201,25 +198,60 @@ public class NoteController {
         }
 
         // Getters and setters
-        public List<NoteDTO> getContent() { return content; }
-        public void setContent(List<NoteDTO> content) { this.content = content; }
-        
-        public int getCurrentPage() { return currentPage; }
-        public void setCurrentPage(int currentPage) { this.currentPage = currentPage; }
-        
-        public int getPageSize() { return pageSize; }
-        public void setPageSize(int pageSize) { this.pageSize = pageSize; }
-        
-        public long getTotalElements() { return totalElements; }
-        public void setTotalElements(long totalElements) { this.totalElements = totalElements; }
-        
-        public int getTotalPages() { return totalPages; }
-        public void setTotalPages(int totalPages) { this.totalPages = totalPages; }
-        
-        public boolean isHasNext() { return hasNext; }
-        public void setHasNext(boolean hasNext) { this.hasNext = hasNext; }
-        
-        public boolean isHasPrevious() { return hasPrevious; }
-        public void setHasPrevious(boolean hasPrevious) { this.hasPrevious = hasPrevious; }
+        public List<NoteDTO> getContent() {
+            return content;
+        }
+
+        public void setContent(List<NoteDTO> content) {
+            this.content = content;
+        }
+
+        public int getCurrentPage() {
+            return currentPage;
+        }
+
+        public void setCurrentPage(int currentPage) {
+            this.currentPage = currentPage;
+        }
+
+        public int getPageSize() {
+            return pageSize;
+        }
+
+        public void setPageSize(int pageSize) {
+            this.pageSize = pageSize;
+        }
+
+        public long getTotalElements() {
+            return totalElements;
+        }
+
+        public void setTotalElements(long totalElements) {
+            this.totalElements = totalElements;
+        }
+
+        public int getTotalPages() {
+            return totalPages;
+        }
+
+        public void setTotalPages(int totalPages) {
+            this.totalPages = totalPages;
+        }
+
+        public boolean isHasNext() {
+            return hasNext;
+        }
+
+        public void setHasNext(boolean hasNext) {
+            this.hasNext = hasNext;
+        }
+
+        public boolean isHasPrevious() {
+            return hasPrevious;
+        }
+
+        public void setHasPrevious(boolean hasPrevious) {
+            this.hasPrevious = hasPrevious;
+        }
     }
 }
