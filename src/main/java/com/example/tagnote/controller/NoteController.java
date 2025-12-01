@@ -4,6 +4,7 @@ import com.example.tagnote.dto.NoteDTO;
 import com.example.tagnote.entity.Note;
 import com.example.tagnote.entity.Tag;
 import com.example.tagnote.service.NoteService;
+import com.example.tagnote.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,9 @@ public class NoteController {
 
     @Autowired
     private NoteService noteService;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${app.notes.page-size:5}")
     private int defaultPageSize;
@@ -173,6 +177,7 @@ public class NoteController {
             note.getContent(),
             note.getCreatedAt(),
             note.getUpdatedAt(),
+            note.getUsername(),
             tagNames);
     }
 

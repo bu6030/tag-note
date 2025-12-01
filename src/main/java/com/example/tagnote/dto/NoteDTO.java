@@ -9,17 +9,20 @@ public class NoteDTO {
     private String content;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String username;
     private List<String> tags;
 
     public NoteDTO() {
     }
 
-    public NoteDTO(Long id, String title, String content, LocalDateTime createdAt, LocalDateTime updatedAt, List<String> tags) {
+    public NoteDTO(Long id, String title, String content, LocalDateTime createdAt, LocalDateTime updatedAt, String username,
+        List<String> tags) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.username = username;
         this.tags = tags;
     }
 
@@ -70,5 +73,13 @@ public class NoteDTO {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

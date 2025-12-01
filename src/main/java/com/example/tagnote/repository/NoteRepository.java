@@ -21,16 +21,22 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     // Method to find all notes ordered by createdAt ascending
     Page<Note> findAllByOrderByCreatedAtAsc(Pageable pageable);
 
-    @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames")
-    List<Note> findByTagNames(@Param("tagNames") List<String> tagNames);
+    // Method to find all notes by username
+    Page<Note> findByUsername(String username, Pageable pageable);
 
-    @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames ORDER BY n.createdAt DESC")
-    Page<Note> findByTagNames(@Param("tagNames") List<String> tagNames, Pageable pageable);
+    // Method to find all notes by username ordered by createdAt descending
+    Page<Note> findByUsernameOrderByCreatedAtDesc(String username, Pageable pageable);
 
-    @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames ORDER BY n.createdAt DESC")
-    List<Note> findByTagNamesOrderByCreatedAtDesc(@Param("tagNames") List<String> tagNames);
+    @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames AND n.username = :username")
+    List<Note> findByTagNamesAndUsername(@Param("tagNames") List<String> tagNames, @Param("username") String username);
+
+    @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames AND n.username = :username ORDER BY n.createdAt DESC")
+    Page<Note> findByTagNamesAndUsername(@Param("tagNames") List<String> tagNames, @Param("username") String username, Pageable pageable);
+
+    @Query("SELECT n FROM Note n JOIN n.tags t WHERE t.name IN :tagNames AND n.username = :username ORDER BY n.createdAt DESC")
+    List<Note> findByTagNamesAndUsernameOrderByCreatedAtDesc(@Param("tagNames") List<String> tagNames, @Param("username") String username);
 
     // Method to get distinct creation dates for calendar view
-    @Query("SELECT DISTINCT n.createdAt FROM Note n ORDER BY n.createdAt DESC")
-    List<LocalDateTime> findDistinctCreationDates();
+    @Query("SELECT DISTINCT n.createdAt FROM Note n WHERE n.username = :username ORDER BY n.createdAt DESC")
+    List<LocalDateTime> findDistinctCreationDatesByUsername(@Param("username") String username);
 }

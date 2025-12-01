@@ -24,6 +24,9 @@ public class Note {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "username")
+    private String username;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(name = "note_tags", joinColumns = @JoinColumn(name = "note_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> tags = new HashSet<>();
@@ -33,6 +36,13 @@ public class Note {
 
     public Note(String content) {
         this.content = content;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Note(String content, String username) {
+        this.content = content;
+        this.username = username;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -105,5 +115,13 @@ public class Note {
     public void removeTag(Tag tag) {
         this.tags.remove(tag);
         tag.getNotes().remove(this);
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

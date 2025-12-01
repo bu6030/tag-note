@@ -1,4 +1,4 @@
-package com.buxuesong.account.infrastructure.general.config;
+package com.example.tagnote.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +10,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -46,6 +51,7 @@ public class SecurityConfigKeyCloak implements WebMvcConfigurer {
                 .userInfoEndpoint(withDefaults()))
             .sessionManagement((sessionManagement) -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
             .csrf((csrf) -> csrf.disable())
+            .cors(withDefaults())
             .authorizeHttpRequests(
                 (authorizeHttpRequests) -> authorizeHttpRequests
                     .requestMatchers("/unauthenticated", "/oauth2/**", "/login/**", "/login.html", "/chrome/**", "/upload.html", "/upload")
@@ -54,5 +60,17 @@ public class SecurityConfigKeyCloak implements WebMvcConfigurer {
             .logout((logout) -> logout
                 .logoutSuccessUrl(keyCloakServerAddress + "/realms/myrealm/protocol/openid-connect/logout?redirect_uri=" + localAddress));
         return http.build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

@@ -3,6 +3,7 @@ package com.example.tagnote.controller;
 import com.example.tagnote.dto.TagDTO;
 import com.example.tagnote.entity.Tag;
 import com.example.tagnote.service.TagService;
+import com.example.tagnote.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,9 @@ public class TagController {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping
     public ResponseEntity<List<TagDTO>> getAllTags() {
@@ -34,7 +38,8 @@ public class TagController {
 
     @PostMapping
     public ResponseEntity<TagDTO> createTag(@RequestBody TagDTO tagDTO) {
-        Tag tag = new Tag(tagDTO.getName());
+        String username = userService.getUsername();
+        Tag tag = new Tag(tagDTO.getName(), username);
         Tag savedTag = tagService.saveTag(tag);
         return ResponseEntity.ok(convertToDTO(savedTag));
     }
@@ -49,6 +54,7 @@ public class TagController {
         return new TagDTO(
             tag.getId(),
             tag.getName(),
-            tag.getCreatedAt());
+            tag.getCreatedAt(),
+            tag.getUsername());
     }
 }

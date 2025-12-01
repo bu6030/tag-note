@@ -18,6 +18,9 @@ public class Tag {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "username")
+    private String username;
+
     @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     private Set<Note> notes = new HashSet<>();
 
@@ -26,6 +29,12 @@ public class Tag {
 
     public Tag(String name) {
         this.name = name;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public Tag(String name, String username) {
+        this.name = name;
+        this.username = username;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -65,5 +74,13 @@ public class Tag {
 
     public void setNotes(Set<Note> notes) {
         this.notes = notes;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
